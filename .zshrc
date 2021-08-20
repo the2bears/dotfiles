@@ -15,3 +15,5 @@ add-zsh-hook precmd set-title-precmd
 add-zsh-hook preexec set-title-preexec
 
 source ~/.profile 
+
+neofetch
