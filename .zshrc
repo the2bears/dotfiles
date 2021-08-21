@@ -21,3 +21,6 @@ add-zsh-hook preexec set-title-preexec
 source ~/.profile 
 
 neofetch
+
+# starship prompt
+eval "$(starship init zsh)"
