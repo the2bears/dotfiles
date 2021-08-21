@@ -1,6 +1,10 @@
 # For dotfiles git
 alias dotfig='git --git-dir=/Users/williamswaney/.dotfig --work-tree=/Users/williamswaney'
 
+# For colors in ls
+alias ll='ls -Alh'
+alias ls='lsd --group-dirs first'
+
 # Set title of terminal. For tabs. Sets to PWD but not full path.
 function set-title-precmd() {
     printf "\e]2;%s\a" " ${PWD##*/}"
