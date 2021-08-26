@@ -22,5 +22,12 @@ source ~/.profile
 
 neofetch
 
-# starship prompt
-eval "$(starship init zsh)"
+if [[ "$TERM" == "dumb" ]]
+then
+    echo "Dumb terminal, no Starship."
+    alias less=cat
+    alias more=cat
+else
+    # starship prompt
+    eval "$(starship init zsh)"
+fi    
