@@ -5,6 +5,17 @@ alias dotfig='git --git-dir=/Users/williamswaney/.dotfig --work-tree=/Users/will
 alias ll='ls -Alh'
 alias ls='lsd --group-dirs first'
 
+# For emacs --daemon
+alias emacs='emacsclient -c'
+if [[ "$(ps -ef | grep emacs | grep daemon | wc -l)" -le 0 ]] &&
+   [[ "$(launchctl list | grep gnu.emacs.daemon | wc -l)" -le 0 ]]
+then
+    echo "Loading emacs --daemon to launchctl"
+    launchctl load -w ~/Library/LaunchAgents/gnu.emacs.daemon.plist
+else
+    echo "Not loading emacs --daemon to launchctl. Already running."
+fi
+
 # Set title of terminal. For tabs. Sets to PWD but not full path.
 function set-title-precmd() {
     printf "\e]2;%s\a" " ${PWD##*/}"
