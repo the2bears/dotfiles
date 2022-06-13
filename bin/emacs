@@ -1,5 +1,5 @@
 #!/bin/zsh
-socket_file=$(/usr/local/bin/emacsserver)
+socket_file=$(~/bin/emacsserver)
 ecs=/Applications/Emacs.app/Contents/MacOS/Emacs
 ecsclient=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
 
