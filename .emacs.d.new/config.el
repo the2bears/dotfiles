@@ -11,7 +11,7 @@
   (setq use-package-always-ensure t
         use-package-expand-minimally t))
 
-;;Add straight 
+  ;;Add straight 
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -25,26 +25,37 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-(straight-use-package 'use-package)
+  ;; tells straight where to find the vertico extensions, orignally was (straight-use-package 'use-package)
+(straight-use-package '(vertico :files (:defaults "extensions/*")
+                        :includes (vertico-buffer
+                                   vertico-directory
+                                   vertico-flat
+                                   vertico-indexed
+                                   vertico-mousen
+                                   vertico-quick
+                                   vertico-repeat
+                                   vertico-reverse)))
+(setq straight-use-package-by-default t)
 
 ;;Personal Info
 (setq user-full-name "William Swaney"
       user-mail-address "the2bears@gmail.com")
 
-;;This helps speed up loading
+  ;;This helps speed up loading
 (eval-and-compile
   (setq gc-cons-threshold 402653184
         gc-cons-percentage 0.6))
 
-;;Sets the custom file so emacs won't write to init.el
+  ;;Sets the custom file so emacs won't write to init.el
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;;globals
+  ;;globals
 (global-auto-revert-mode)
 (global-hl-line-mode +1)
-;;Basic settings and properties
+  
+  ;;Basic settings and properties
 (setq auto-revert-verbose nil
       explicit-shell-file-name "/bin/zsh"
       inhibit-startup-message t
@@ -52,7 +63,7 @@
 (save-place-mode 1)
 (tool-bar-mode -1) 
 
-;;For Mac(?)
+  ;;For Mac(?)
 (toggle-frame-fullscreen)
 (use-package exec-path-from-shell
   :straight t
@@ -61,9 +72,16 @@
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 
+;; ========
+      ;; diminish
+      ;; ========
+      ;;This package implements hiding or abbreviation of the mode line displays (lighters) of minor-modes.
 (use-package diminish
-  :straight t)
-;;undo-tree
+    :straight t)
+
+  ;; =========
+  ;; undo-tree
+  ;; =========
 (use-package undo-tree
   :straight t
   :diminish undo-tree-mode
@@ -71,10 +89,11 @@
   (global-undo-tree-mode)
   :custom
   (undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo"))))
-;; ==========
-;; marginalia
-;; ==========
-;; Enable richer annotations using the Marginalia package
+
+  ;; ==========
+  ;; marginalia
+  ;; ==========
+  ;; Enable richer annotations in minibuffers using the Marginalia package
 (use-package marginalia
   :straight t
   :ensure t
@@ -86,18 +105,31 @@
   ;; The :init configuration is always executed (Not lazy!)
   :init
   (marginalia-mode))
-;;which-key
+
+  ;; =========
+  ;; which-key
+  ;; =========
+  ;; A minor mode for Emacs that displays the key bindings following your currently entered incomplete command
 (use-package which-key
   :straight t
   :diminish which-key-mode
   :init
   (which-key-mode +1))
-;;expand-region
+
+  ;; =============
+  ;; expand-region
+  ;; =============
+  ;; Expand region increases the selected region by semantic units. 
 (use-package expand-region
   :straight t
   :ensure t
   :bind ("C-=" . er/expand-region))
-;;company stands for 'complete anything' and is a completion framework.
+
+
+  ;; =======
+  ;; company
+  ;; =======
+  ;; Stands for 'complete anything' and is a completion framework.
 (use-package company
   :straight t
   :diminish company-mode
@@ -109,31 +141,62 @@
   (setq company-minimum-prefix-length 2)
   (setq company-tooltip-align-annotations t)
   (setq company-backends '((company-capf company-dabbrev-code))))
+
+  ;; =========
+  ;; prescient  
+  ;; =========
+  ;; A library which sorts and filters lists of candidates - w/company
 (use-package company-prescient
   :straight t
   :after company
   :config
   (company-prescient-mode 1)
   (prescient-persist-mode 1))
-;;  (use-package company-quickhelp
-;;    :straight t
-;;    :after company)
-;;vertico for mini-buffer completion
+
+  ;; =======
+  ;; vertico
+  ;; =======
+  ;; For mini-buffer completion
 (use-package vertico
   :straight t
   :init
   (vertico-mode))
-;;added completion styles
+    ;; Configure directory extension.
+(use-package vertico-directory
+  :straight t
+  :after vertico
+  :ensure nil
+  ;; More convenient directory navigation commands
+  :bind (:map vertico-map
+              ("RET" . vertico-directory-enter)
+              ("DEL" . vertico-directory-delete-char)
+              ("M-DEL" . vertico-directory-delete-word))
+  ;; Tidy shadowed file names
+  :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
+
+    ;; =========
+    ;; orderless
+    ;; =========
+    ;; added completion styles
 (use-package orderless
   :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion)))))
-;;built in savehist remembers previous selections in mini-buffer selections
+
+  ;; ========
+  ;; savehist
+  ;; ========
+  ;;built in savehist remembers previous selections in mini-buffer selections
 (use-package savehist
   :init
   (savehist-mode))
-;;Embark - context actions
+
+  ;; ======
+  ;; embark
+  ;; ======
+  ;; context actions... normally we have function->obj but this also adds
+  ;; obj->function work flow
 (use-package embark
   :straight t
   :bind
@@ -149,23 +212,51 @@
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
                  (window-parameters (mode-line-format . none)))))
-;; Example configuration for Consult
+
+  ;; =======
+  ;; consult
+  ;; =======
+  ;; Example configuration for Consult
 (use-package consult
+  :straight t
+  :ensure t
   ;; Replace bindings. Lazily loaded due by `use-package'.
-  :bind (("C-x b" . consult-buffer)
-         ("C-x C-b" . consult-buffer)
+  :bind (;;("C-x b" . consult-buffer)
+         ;;("C-x C-b" . consult-buffer)
          ("M-y" . consult-yank-pop)                ;; orig. yank-pop
          ("M-s g" . consult-grep)))
-;;super-save, saves buffers when they lose focus
+
+  ;; ==========
+  ;; super-save
+  ;; ==========
+  ;; saves buffers when they lose focus
 (use-package super-save
   :straight t
   :diminish super-save-mode
   :config
   (super-save-mode +1))
+
+  ;; ====
+  ;; helm
+  ;; ====
+  ;; framework for incremental completions and narrowing selections.
 (use-package helm
   :straight t)
+
+  ;; ================
+  ;; multiple-cursors
+  ;; ================
+  ;; Multiple cursors for Emacs
 (use-package multiple-cursors
   :straight t)
+
+  ;; ======
+  ;; swiper
+  ;; ======
+  ;; for searching - TODO add swiper-helm?
+(use-package swiper
+  :straight t
+  :config (global-set-key (kbd "C-s") 'swiper))
 
 ;;Load the theme
 (load-theme 'modus-vivendi t)
@@ -220,10 +311,10 @@
                 (org-block-begin-line . 1.1)))
   (set-face-attribute (car face) nil :font "Iosevka Aile" :weight 'medium :height (cdr face)))
 
-;; Make sure org-indent face is available
+      ;; Make sure org-indent face is available
 (require 'org-indent)
 
-;; Ensure that anything that should be fixed-pitch in Org files appears that way
+      ;; Ensure that anything that should be fixed-pitch in Org files appears that way
 (set-face-attribute 'org-block nil :height 1.2 :foreground nil :inherit 'fixed-pitch)
 (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
 (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
@@ -234,7 +325,7 @@
 (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
 (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
 
-;; Get rid of the background on column views
+      ;; Get rid of the background on column views
 (set-face-attribute 'org-column nil :background nil)
 (set-face-attribute 'org-column-title nil :background nil)
 
@@ -267,14 +358,14 @@
   :straight t
   :ensure t
   :bind (("C-x g" . magit-status)))
-;;parinfer
+  ;;parinfer
 (use-package parinfer-rust-mode
   :straight t
   :hook emacs-lisp-mode clojure-mode
   :ensure t
   :init
   (setq parinfer-rust-auto-download t))
-;; Enable nice rendering of diagnostics like compile errors.
+  ;; Enable nice rendering of diagnostics like compile errors.
 (use-package flycheck
   :straight t
   :diminish flycheck-mode
@@ -311,14 +402,14 @@
   (setq lsp-prefer-flymake nil
         lsp-client-packages '(lsp-clients lsp-metals)))
 
-;;(use-package company-lsp
-;;  :ensure t)
+  ;;(use-package company-lsp
+  ;;  :ensure t)
 
-;; Enable nice rendering of documentation on hover
-;;   Warning: on some systems this package can reduce your emacs responsiveness significally.
-;;   (See: https://emacs-lsp.github.io/lsp-mode/page/performance/)
-;;   In that case you have to not only disable this but also remove from the packages since
-;;   lsp-mode can activate it automatically.
+  ;; Enable nice rendering of documentation on hover
+  ;;   Warning: on some systems this package can reduce your emacs responsiveness significally.
+  ;;   (See: https://emacs-lsp.github.io/lsp-mode/page/performance/)
+  ;;   In that case you have to not only disable this but also remove from the packages since
+  ;;   lsp-mode can activate it automatically.
 (use-package lsp-ui
   :straight t
   :ensure t)
@@ -326,18 +417,19 @@
   :after lsp-mode
   :config (dap-auto-configure-mode))
 (use-package dap-java
+  :straight f
   :ensure nil)
 
 ;;clojure-mode
 (use-package clojure-mode
   :straight t)
-;;cider
+  ;;cider
 (use-package cider
   :straight t)
-;;:init
-;;(add-hook 'cider-repl-mode-hook #'company-mode)
-;;(add-hook 'cider-mode-hook #'company-mode)
-;;(add-hook 'clojure-mode-hook #'company-mode))
+  ;;:init
+  ;;(add-hook 'cider-repl-mode-hook #'company-mode)
+  ;;(add-hook 'cider-mode-hook #'company-mode)
+  ;;(add-hook 'clojure-mode-hook #'company-mode))
 
 ;; Enable scala-mode for highlighting, indentation and motion commands
 (use-package scala-mode
@@ -346,7 +438,7 @@
   :interpreter
   ("scala" . scala-mode))
 
-;; Enable sbt mode for executing sbt commands
+  ;; Enable sbt mode for executing sbt commands
 (use-package sbt-mode
   :straight t
   :ensure t
@@ -361,7 +453,7 @@
   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
   (setq sbt:program-options '("-Dsbt.supershell=false")))
 
-;; Add metals backend for lsp-mode
+  ;; Add metals backend for lsp-mode
 (use-package lsp-metals
   :straight t
   :ensure t
@@ -372,6 +464,9 @@
   :ensure t
   :init
   (setq lsp-completion-provider :capf)
+  (setq lsp-java-imports-gradle-wrapper-checksums [(
+                                                    :sha256 "c8f4be323109753b6b2de24a5ca9c5ed711270071ac14d0718229cbc77236f48"
+                                                    :allowed t)])
   :config
   (add-hook 'java-mode-hook 'lsp))
 
