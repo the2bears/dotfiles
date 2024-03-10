@@ -44,3 +44,4 @@ else
 fi    
 
 PATH=~/bin:$PATH
+

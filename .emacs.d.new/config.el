@@ -73,9 +73,9 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 ;; ========
-      ;; diminish
-      ;; ========
-      ;;This package implements hiding or abbreviation of the mode line displays (lighters) of minor-modes.
+  ;; diminish
+  ;; ========
+  ;;This package implements hiding or abbreviation of the mode line displays (lighters) of minor-modes.
 (use-package diminish
     :straight t)
 
@@ -217,12 +217,12 @@
   ;; consult
   ;; =======
   ;; Example configuration for Consult
-(use-package consult
-  :straight t
+(use-package consuLt
+  :straight f
   :ensure t
   ;; Replace bindings. Lazily loaded due by `use-package'.
-  :bind (;;("C-x b" . consult-buffer)
-         ;;("C-x C-b" . consult-buffer)
+  :bind (("C-x b" . consult-buffer)
+         ("C-x C-b" . consult-buffer)
          ("M-y" . consult-yank-pop)                ;; orig. yank-pop
          ("M-s g" . consult-grep)))
 
@@ -240,8 +240,8 @@
   ;; helm
   ;; ====
   ;; framework for incremental completions and narrowing selections.
-(use-package helm
-  :straight t)
+;; (use-package helm
+;;   :straight t)
 
   ;; ================
   ;; multiple-cursors
@@ -261,6 +261,15 @@
 ;;Load the theme
 (load-theme 'modus-vivendi t)
 (setq modus-themes-org-blocks 'gray-background)
+
+;;Default is Mocha
+(use-package catppuccin-theme
+  :straight t
+  :ensure t)
+;;(straight-use-package 'catppuccin-theme)
+;;(load-theme 'catppuccin :no-confirm)
+;;(setq catppuccin-flavor 'macchiato) ;; or 'latte, 'macchiato, or 'mocha
+;;(catppuccin-reload)
 
 (use-package rainbow-delimiters
   :straight t
@@ -296,6 +305,7 @@
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
+;;https://emacs.stackexchange.com/questions/71714/how-do-i-define-default-language-for-org-mode-source-code-blocks
 (require 'org-tempo)
 
 (set-face-attribute 'org-document-title nil :font "Iosevka Aile" :weight 'bold :height 1.3)
@@ -314,7 +324,7 @@
       ;; Make sure org-indent face is available
 (require 'org-indent)
 
-      ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+;; Ensure that anything that should be fixed-pitch in Org files appears that way
 (set-face-attribute 'org-block nil :height 1.2 :foreground nil :inherit 'fixed-pitch)
 (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
 (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
@@ -353,18 +363,64 @@
   :config
   (setq org-auto-tangle-default t))
 
-;;Magit, best. git. client. ever.
+(use-package org-roam
+  :straight t
+  :ensure t
+  :init (setq org-roam-v2-ack t)
+  :custom
+    (org-roam-directory "~/org-mode_workspace/org-roam")
+    (org-roam-completion-everywhere t)
+  :bind
+    (("C-c r l" . org-roam-buffer-toggle)
+     ("C-c r f" . org-roam-node-find)
+     ("C-c r i" . org-roam-node-insert)
+     ("C-c r c" . org-roam-capture)
+   ;;Dailies
+     ("C-c r j" . org-roam-dailies-capture-today)
+     :map org-mode-map ("C-M-i" . completion-at-point))
+  :config
+    (org-roam-db-autosync-mode)
+    (org-roam-setup))
+
+;; =====
+  ;; magit
+  ;; =====
+  ;; best. git. client. ever.
 (use-package magit
   :straight t
   :ensure t
-  :bind (("C-x g" . magit-status)))
-  ;;parinfer
+  :bind (("C-x gg" . magit-status)))
+
+  ;; ===========
+  ;; magit-delta
+  ;; ===========
+  ;; using 'delta' for git diffs
+(use-package magit-delta
+  :straight t
+  :ensure t
+  :after magit
+  :hook (magit-mode . magit-delta-mode))
+
+  ;; ===============
+  ;; git-timemachine
+  ;; ===============
+  ;; move back and forth between revisions of a git controlled file
+(use-package git-timemachine
+  :straight t
+  :ensure t
+  :bind (("C-x gt" . git-timemachine)))
+
+  ;; ========
+  ;; parinfer
+  ;; =======
+  ;; parentheses management
 (use-package parinfer-rust-mode
   :straight t
   :hook emacs-lisp-mode clojure-mode
   :ensure t
   :init
   (setq parinfer-rust-auto-download t))
+
   ;; Enable nice rendering of diagnostics like compile errors.
 (use-package flycheck
   :straight t
@@ -420,6 +476,28 @@
   :straight f
   :ensure nil)
 
+;; for Prolog
+(lsp-register-client
+ ;;(message "t2b/prolog-lsp-fn()")
+  (make-lsp-client
+   :new-connection
+   (lsp-stdio-connection (list "swipl"
+                            "-g" "use_module(library(lsp_server))."
+                            "-g" "lsp_server:main"
+                            "-t" "halt"
+                            "--" "stdio")) 
+   :major-modes '(prolog-mode)
+   :priority 1
+   :multi-root t
+   :server-id 'prolog-ls))
+
+
+(use-package prolog
+  :ensure t
+  :config (add-hook 'prolog-mode-hook 'lsp))
+(setq auto-mode-alist (append '(("\\.pl$" . prolog-mode))
+                             auto-mode-alist))
+
 ;;clojure-mode
 (use-package clojure-mode
   :straight t)
@@ -461,15 +539,39 @@
   (add-hook 'scala-mode-hook 'lsp))
 
 (use-package lsp-java
-  :ensure t
-  :init
-  (setq lsp-completion-provider :capf)
-  (setq lsp-java-imports-gradle-wrapper-checksums [(
-                                                    :sha256 "c8f4be323109753b6b2de24a5ca9c5ed711270071ac14d0718229cbc77236f48"
-                                                    :allowed t)])
-  :config
-  (add-hook 'java-mode-hook 'lsp))
-
-;;Revert back so no long GC pauses during runtime
+    :ensure t
+    :init
+    (setq lsp-completion-provider :capf)
+    (setq lsp-java-imports-gradle-wrapper-checksums [(
+                                                      :sha256 "c8f4be323109753b6b2de24a5ca9c5ed711270071ac14d0718229cbc77236f48"
+                                                      :allowed t)])
+    :config
+    (add-hook 'java-mode-hook 'lsp))
+  ;;Revert back so no long GC pauses during runtime
 (setq gc-cons-threshold 16777216
       gc-cons-percentage 0.1)
+
+(use-package rustic
+  :straight t
+  :ensure t
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  (setq rustic-format-on-save t))
+
+(use-package dyalog-mode
+  :straight t
+  :ensure t
+  :init
+  ;;(autoload 'dyalog-mode "/path/to/dyalog-mode.el" "Edit Dyalog APL" t)
+  ;;(autoload 'dyalog-editor-connect "/path/to/dyalog-mode.el" "Connect Emacs to Dyalog" t)
+  (add-to-list 'auto-mode-alist '("\\.apl\\'" . dyalog-mode))
+  (add-to-list 'auto-mode-alist '("\\.dyalog$" . dyalog-mode))
+)
