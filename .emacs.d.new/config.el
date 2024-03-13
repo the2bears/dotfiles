@@ -54,7 +54,8 @@
   ;;globals
 (global-auto-revert-mode)
 (global-hl-line-mode +1)
-  
+(scroll-bar-mode -1)
+
   ;;Basic settings and properties
 (setq auto-revert-verbose nil
       explicit-shell-file-name "/bin/zsh"
@@ -217,7 +218,7 @@
   ;; consult
   ;; =======
   ;; Example configuration for Consult
-(use-package consuLt
+(use-package consult
   :straight f
   :ensure t
   ;; Replace bindings. Lazily loaded due by `use-package'.
@@ -281,8 +282,10 @@
   (org-indent-mode)
   (variable-pitch-mode 1)
   (auto-fill-mode 0)
-  (visual-line-mode 1))
+  (visual-line-mode 1)
+  (setq org-directory "~/.org"))
 
+;;(setq org-directory "~/.org")
 (use-package org
   :hook (org-mode . t2b/org-mode-setup)
   :ensure t
@@ -346,10 +349,17 @@
 (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
                                (directory-files-recursively "~/.org/" "\\.org$")))
 
+(defun t2b/org-mode-agenda-files-update ()
+  (message "t2b/org-mode-agenda-files-update")
+  (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
+                               (directory-files-recursively "~/.org/" "\\.org$"))))
+
+(add-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
+
 (global-set-key (kbd "C-c c") 'org-capture)
 
-(setq org-capture-templates '(("t" "Todo [inbox]" entry
-                               (file+headline "~/.org/inbox.org" "Tasks")
+(setq org-capture-templates `(("t" "Todo [monthly]" entry
+                               (file+headline ,(format-time-string "~/.org/tasks/tasks-%Y-%b.org") ,(format-time-string "%Y-%b-%d"))
                                "* TODO %i%?")
                               ("T" "Tickler" entry
                                (file+headline "~/.org/tickler.org" "Tickler")
@@ -383,37 +393,37 @@
     (org-roam-setup))
 
 ;; =====
-  ;; magit
-  ;; =====
-  ;; best. git. client. ever.
+;; magit
+;; =====
+;; best. git. client. ever.
 (use-package magit
   :straight t
   :ensure t
-  :bind (("C-x gg" . magit-status)))
+  :bind (("C-x g" . magit-status)))
 
-  ;; ===========
-  ;; magit-delta
-  ;; ===========
-  ;; using 'delta' for git diffs
+;; ===========
+;; magit-delta
+;; ===========
+;; using 'delta' for git diffs
 (use-package magit-delta
   :straight t
   :ensure t
   :after magit
   :hook (magit-mode . magit-delta-mode))
 
-  ;; ===============
-  ;; git-timemachine
-  ;; ===============
-  ;; move back and forth between revisions of a git controlled file
-(use-package git-timemachine
-  :straight t
-  :ensure t
-  :bind (("C-x gt" . git-timemachine)))
+;; ===============
+;; git-timemachine
+;; ===============
+;; move back and forth between revisions of a git controlled file
+;;  (use-package git-timemachine
+;;    :straight t
+;;    :ensure t
+;;    :bind (("C-x gt" . git-timemachine)))
 
-  ;; ========
-  ;; parinfer
-  ;; =======
-  ;; parentheses management
+;; ========
+;; parinfer
+;; ========
+;; parentheses management
 (use-package parinfer-rust-mode
   :straight t
   :hook emacs-lisp-mode clojure-mode
@@ -421,7 +431,7 @@
   :init
   (setq parinfer-rust-auto-download t))
 
-  ;; Enable nice rendering of diagnostics like compile errors.
+;; Enable nice rendering of diagnostics like compile errors.
 (use-package flycheck
   :straight t
   :diminish flycheck-mode
@@ -441,6 +451,25 @@
   :config (yas-global-mode))
 (use-package hydra
   :straight t)
+
+;; ========
+;; hideshow
+;; ========
+;;(add-hook 'java-mode-hook 'hs-minor-mode)
+(add-hook 'java-mode-hook
+(lambda()
+  (local-set-key (kbd "C-<right>") 'hs-show-block)
+  (local-set-key (kbd "C-<left>")  'hs-hide-block)
+  ;;(local-set-key (kbd "C-c <up>")    'hs-hide-all)
+  ;;(local-set-key (kbd "C-c <down>")  'hs-show-all)
+  (hs-minor-mode t)))
+(defun display-code-line-counts (ov)
+  (when (eq 'code (overlay-get ov 'hs))
+    (overlay-put ov 'help-echo
+              (buffer-substring (overlay-start ov)
+  		              (overlay-end ov)))))
+
+(setq hs-set-up-overlay 'display-code-line-counts)
 
 (use-package lsp-mode
   :ensure t
@@ -542,8 +571,7 @@
     :ensure t
     :init
     (setq lsp-completion-provider :capf)
-    (setq lsp-java-imports-gradle-wrapper-checksums [(
-                                                      :sha256 "c8f4be323109753b6b2de24a5ca9c5ed711270071ac14d0718229cbc77236f48"
+    (setq lsp-java-imports-gradle-wrapper-checksums [(:sha256 "c8f4be323109753b6b2de24a5ca9c5ed711270071ac14d0718229cbc77236f48"
                                                       :allowed t)])
     :config
     (add-hook 'java-mode-hook 'lsp))
