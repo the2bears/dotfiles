@@ -366,6 +366,7 @@
 (add-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
 
 (global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c a") 'org-agenda)
 
 (setq org-capture-templates `(("t" "Todo [monthly]" entry
                                (file+headline ,(format-time-string "~/.org/tasks/tasks-%Y-%b.org") ,(format-time-string "%Y-%b-%d"))
