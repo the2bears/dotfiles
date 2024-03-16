@@ -5,6 +5,9 @@ alias dotfig='git --git-dir=/Users/williamswaney/.dotfig --work-tree=/Users/will
 alias ll='ls -Alh'
 alias ls='lsd --group-dirs first'
 
+alias cleark='printf "\033[2J\033[3J\033[1;1H"'
+
+
 # For emacs --daemon
 # alias emacs='emacsclient -c'
 # if [[ "$(ps -ef | grep emacs | grep daemon | wc -l)" -le 0 ]] &&

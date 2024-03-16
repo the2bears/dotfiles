@@ -259,6 +259,15 @@
   :straight t
   :config (global-set-key (kbd "C-s") 'swiper))
 
+  ;; ============
+  ;; golden-ratio
+  ;; ============
+  ;; Adjusts size of active window
+(use-package golden-ratio
+  :straight t
+  :ensure t
+  :config (golden-ratio-mode 1))
+
 ;;Load the theme
 (load-theme 'modus-vivendi t)
 (setq modus-themes-org-blocks 'gray-background)
