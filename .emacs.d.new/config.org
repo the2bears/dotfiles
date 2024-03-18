@@ -16,44 +16,46 @@
 ** Vanilla    
 *** Packaging
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
+
   ;;Bootstrap use-package
-(require 'package)
-(add-to-list 'package-archives '("gnu"   . "https://elpa.gnu.org/packages/"))
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-(package-initialize)
+  (require 'package)
+  (add-to-list 'package-archives '("gnu"   . "https://elpa.gnu.org/packages/"))
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+  (package-initialize)
 
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-(eval-and-compile
-  (setq use-package-always-ensure t
-        use-package-expand-minimally t))
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (eval-and-compile
+    (setq use-package-always-ensure t
+          use-package-expand-minimally t))
 
-  ;;Add straight 
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+    ;;Add straight 
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
 
-  ;; tells straight where to find the vertico extensions, orignally was (straight-use-package 'use-package)
-(straight-use-package '(vertico :files (:defaults "extensions/*")
-                        :includes (vertico-buffer
-                                   vertico-directory
-                                   vertico-flat
-                                   vertico-indexed
-                                   vertico-mousen
-                                   vertico-quick
-                                   vertico-repeat
-                                   vertico-reverse)))
-(setq straight-use-package-by-default t)
+    ;; tells straight where to find the vertico extensions, orignally was (straight-use-package 'use-package)
+  (straight-use-package '(vertico :files (:defaults "extensions/*")
+                          :includes (vertico-buffer
+                                     vertico-directory
+                                     vertico-flat
+                                     vertico-indexed
+                                     vertico-mousen
+                                     vertico-quick
+                                     vertico-repeat
+                                     vertico-reverse)))
+  (setq straight-use-package-by-default t)
 
 
 #+end_src
@@ -297,6 +299,7 @@
 ** Look and Feel
 *** Themes
 #+begin_src emacs-lisp
+
   ;;Load the theme
   (load-theme 'modus-vivendi t)
   (setq modus-themes-org-blocks 'gray-background)
@@ -304,11 +307,13 @@
   ;;Default is Mocha
   (use-package catppuccin-theme
     :straight t
-    :ensure t)
+    :ensure t
+    :init (load-theme 'catppuccin :no-confirm))
   ;;(straight-use-package 'catppuccin-theme)
   ;;(load-theme 'catppuccin :no-confirm)
   ;;(setq catppuccin-flavor 'macchiato) ;; or 'latte, 'macchiato, or 'mocha
   ;;(catppuccin-reload)
+  
 #+end_src
 *** Rainbow Delimiters
 #+begin_src emacs-lisp
@@ -390,15 +395,15 @@
   (when (not (file-exists-p "~/.org"))
     (make-directory "~/.org" t))
 
-  (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
-                                 (directory-files-recursively "~/.org/" "\\.org$")))
+;;  (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
+;;                                 (directory-files-recursively "~/.org/" "\\.org$")))
 
   (defun t2b/org-mode-agenda-files-update ()
-    (message "t2b/org-mode-agenda-files-update")
     (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
                                  (directory-files-recursively "~/.org/" "\\.org$"))))
 
-  (add-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
+  ;;(add-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
+  ;;(remove-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
 
   (global-set-key (kbd "C-c c") 'org-capture)
   (global-set-key (kbd "C-c a") 'org-agenda)
@@ -409,8 +414,6 @@
                                 ("T" "Tickler" entry
                                  (file+headline "~/.org/tickler.org" "Tickler")
                                  "* %i%? \n %U")))
-
-
 
 #+end_src
 
@@ -429,24 +432,63 @@
 
 *** Org-roam
 #+begin_src emacs-lisp
-  (use-package org-roam
-    :straight t
-    :ensure t
-    :init (setq org-roam-v2-ack t)
-    :custom
-      (org-roam-directory "~/org-mode_workspace/org-roam")
+
+    ;;start personal functions
+    (defun t2b/org-file-tags-from-file (filename)
+      "Return a list of filetags present in the Org mode file FILENAME."
+      (with-current-buffer (find-file-noselect filename)
+        (save-excursion
+          (goto-char (point-min))
+          (let ((filetags '()))
+            (while (re-search-forward "^#\\+filetags:\\s-+\\(.*\\)" nil t)
+              (message (match-string 1))
+              (setq filetags (append filetags (split-string (match-string 1) ":"))))
+            filetags))))
+
+    (defun t2b/org-filetag-exists-p (filename filetag)
+      "Return t if FILETAG exists in the Org mode file FILENAME, otherwise nil."
+      (let ((filetags (t2b/org-file-tags-from-file filename)))
+        (member filetag filetags)))
+
+    (defun t2b/org-roam-agenda-update ()
+      (let ((s (buffer-file-name (org-capture-get :buffer))))
+        (when (t2b/org-filetag-exists-p s "project")
+          (add-to-list 'org-agenda-files s))))
+
+    ;;(setq org-agenda-files '())
+    ;;(setq org-capture-after-finalize-hook '())
+
+    ;;(t2b/org-roam-agenda-update)
+    ;;end personal functions
+    (add-hook 'org-capture-after-finalize-hook 't2b/org-roam-agenda-update)
+
+    (use-package org-roam
+      :straight t
+      :ensure t
+      :init (setq org-roam-v2-ack t)
+      :custom
+      (org-roam-directory "~/.roam")
       (org-roam-completion-everywhere t)
-    :bind
+      (org-roam-capture-templates
+       '(("d" "default" plain
+          "%?"
+          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+          :unnarrowed t)
+         ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Initial tasks for ${title}\n\n* Dates\n\n"
+          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" ":PROPERTIES:\n:CATEGORY: %^{CATEGORY}\n:PARENT: %^{PARENT}\n:END:\n#+title: ${title}\n#+filetags: project")
+          :unnarrowed t)))
+      :bind
       (("C-c r l" . org-roam-buffer-toggle)
        ("C-c r f" . org-roam-node-find)
        ("C-c r i" . org-roam-node-insert)
        ("C-c r c" . org-roam-capture)
-     ;;Dailies
+       ;;Dailies
        ("C-c r j" . org-roam-dailies-capture-today)
        :map org-mode-map ("C-M-i" . completion-at-point))
-    :config
+      :config
       (org-roam-db-autosync-mode)
       (org-roam-setup))
+
   #+end_src
 ** Development
 *** General

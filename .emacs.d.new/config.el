@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;;Bootstrap use-package
 (require 'package)
 (add-to-list 'package-archives '("gnu"   . "https://elpa.gnu.org/packages/"))
@@ -275,7 +277,8 @@
 ;;Default is Mocha
 (use-package catppuccin-theme
   :straight t
-  :ensure t)
+  :ensure t
+  :init (load-theme 'catppuccin :no-confirm))
 ;;(straight-use-package 'catppuccin-theme)
 ;;(load-theme 'catppuccin :no-confirm)
 ;;(setq catppuccin-flavor 'macchiato) ;; or 'latte, 'macchiato, or 'mocha
@@ -288,92 +291,92 @@
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
 (defun t2b/org-mode-setup ()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (setq org-directory "~/.org"))
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
+    (setq org-directory "~/.org"))
 
-;;(setq org-directory "~/.org")
-(use-package org
-  :hook (org-mode . t2b/org-mode-setup)
-  :ensure t
-  :defer t
-  :config
-  (setq org-ellipsis " ▾"
-        org-hide-emphasis-markers t
-        org-src-fontify-natively t
-        org-fontify-quote-and-verse-blocks t
-        org-src-tab-acts-natively t
-        org-edit-src-content-indentation 2
-        org-hide-block-startup t
-        org-src-preserve-indentation nil
-        org-startup-folded 'content
-        org-cycle-separator-lines 2))
+  ;;(setq org-directory "~/.org")
+  (use-package org
+    :hook (org-mode . t2b/org-mode-setup)
+    :ensure t
+    :defer t
+    :config
+    (setq org-ellipsis " ▾"
+          org-hide-emphasis-markers t
+          org-src-fontify-natively t
+          org-fontify-quote-and-verse-blocks t
+          org-src-tab-acts-natively t
+          org-edit-src-content-indentation 2
+          org-hide-block-startup t
+          org-src-preserve-indentation nil
+          org-startup-folded 'content
+          org-cycle-separator-lines 2))
 
-(use-package org-bullets
-  :straight t
-  :ensure t
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+  (use-package org-bullets
+    :straight t
+    :ensure t
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
-;;https://emacs.stackexchange.com/questions/71714/how-do-i-define-default-language-for-org-mode-source-code-blocks
-(require 'org-tempo)
+  ;;https://emacs.stackexchange.com/questions/71714/how-do-i-define-default-language-for-org-mode-source-code-blocks
+  (require 'org-tempo)
 
-(set-face-attribute 'org-document-title nil :font "Iosevka Aile" :weight 'bold :height 1.3)
-(dolist (face '((org-level-1 . 1.6)
-                (org-level-2 . 1.4)
-                (org-level-3 . 1.2)
-                (org-level-4 . 1.1)
-                (org-level-5 . 1.1)
-                (org-level-6 . 1.1)
-                (org-level-7 . 1.1)
-                (org-level-8 . 1.1)
-                (org-link . 1.1)                  
-                (org-block-begin-line . 1.1)))
-  (set-face-attribute (car face) nil :font "Iosevka Aile" :weight 'medium :height (cdr face)))
+  (set-face-attribute 'org-document-title nil :font "Iosevka Aile" :weight 'bold :height 1.3)
+  (dolist (face '((org-level-1 . 1.6)
+                  (org-level-2 . 1.4)
+                  (org-level-3 . 1.2)
+                  (org-level-4 . 1.1)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)
+                  (org-link . 1.1)                  
+                  (org-block-begin-line . 1.1)))
+    (set-face-attribute (car face) nil :font "Iosevka Aile" :weight 'medium :height (cdr face)))
 
-      ;; Make sure org-indent face is available
-(require 'org-indent)
+        ;; Make sure org-indent face is available
+  (require 'org-indent)
 
-;; Ensure that anything that should be fixed-pitch in Org files appears that way
-(set-face-attribute 'org-block nil :height 1.2 :foreground nil :inherit 'fixed-pitch)
-(set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
-(set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-(set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
-(set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
-(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
+  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  (set-face-attribute 'org-block nil :height 1.2 :foreground nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-table nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
 
-      ;; Get rid of the background on column views
-(set-face-attribute 'org-column nil :background nil)
-(set-face-attribute 'org-column-title nil :background nil)
+        ;; Get rid of the background on column views
+  (set-face-attribute 'org-column nil :background nil)
+  (set-face-attribute 'org-column-title nil :background nil)
 
 
-(when (not (file-exists-p "~/.org"))
-  (make-directory "~/.org" t))
+  (when (not (file-exists-p "~/.org"))
+    (make-directory "~/.org" t))
 
-(setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
-                               (directory-files-recursively "~/.org/" "\\.org$")))
+;;  (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
+;;                                 (directory-files-recursively "~/.org/" "\\.org$")))
 
-(defun t2b/org-mode-agenda-files-update ()
-  (message "t2b/org-mode-agenda-files-update")
-  (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
-                               (directory-files-recursively "~/.org/" "\\.org$"))))
+  (defun t2b/org-mode-agenda-files-update ()
+    (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
+                                 (directory-files-recursively "~/.org/" "\\.org$"))))
 
-(add-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
+  ;;(add-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
+  ;;(remove-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
 
-(global-set-key (kbd "C-c c") 'org-capture)
-(global-set-key (kbd "C-c a") 'org-agenda)
-
-(setq org-capture-templates `(("t" "Todo [monthly]" entry
-                               (file+headline ,(format-time-string "~/.org/tasks/tasks-%Y-%b.org") ,(format-time-string "%Y-%b-%d"))
-                               "* TODO %i%?")
-                              ("T" "Tickler" entry
-                               (file+headline "~/.org/tickler.org" "Tickler")
-                               "* %i%? \n %U")))
+  (global-set-key (kbd "C-c c") 'org-capture)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  
+  (setq org-capture-templates `(("t" "Todo [monthly]" entry
+                                 (file+headline ,(format-time-string "~/.org/tasks/tasks-%Y-%b.org") ,(format-time-string "%Y-%b-%d"))
+                                 "* TODO %i%?")
+                                ("T" "Tickler" entry
+                                 (file+headline "~/.org/tickler.org" "Tickler")
+                                 "* %i%? \n %U")))
 
 ;;Auto-tangle
 (use-package org-auto-tangle
@@ -383,24 +386,61 @@
   :config
   (setq org-auto-tangle-default t))
 
+;;start personal functions
+(defun t2b/org-file-tags-from-file (filename)
+  "Return a list of filetags present in the Org mode file FILENAME."
+  (with-current-buffer (find-file-noselect filename)
+    (save-excursion
+      (goto-char (point-min))
+      (let ((filetags '()))
+        (while (re-search-forward "^#\\+filetags:\\s-+\\(.*\\)" nil t)
+          (message (match-string 1))
+          (setq filetags (append filetags (split-string (match-string 1) ":"))))
+        filetags))))
+
+(defun t2b/org-filetag-exists-p (filename filetag)
+  "Return t if FILETAG exists in the Org mode file FILENAME, otherwise nil."
+  (let ((filetags (t2b/org-file-tags-from-file filename)))
+    (member filetag filetags)))
+
+(defun t2b/org-roam-agenda-update ()
+  (let ((s (buffer-file-name (org-capture-get :buffer))))
+    (when (t2b/org-filetag-exists-p s "project")
+      (add-to-list 'org-agenda-files s))))
+
+;;(setq org-agenda-files '())
+;;(setq org-capture-after-finalize-hook '())
+
+;;(t2b/org-roam-agenda-update)
+;;end personal functions
+(add-hook 'org-capture-after-finalize-hook 't2b/org-roam-agenda-update)
+
 (use-package org-roam
   :straight t
   :ensure t
   :init (setq org-roam-v2-ack t)
   :custom
-    (org-roam-directory "~/org-mode_workspace/org-roam")
-    (org-roam-completion-everywhere t)
+  (org-roam-directory "~/.roam")
+  (org-roam-completion-everywhere t)
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)
+     ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Initial tasks for ${title}\n\n* Dates\n\n"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" ":PROPERTIES:\n:CATEGORY: %^{CATEGORY}\n:PARENT: %^{PARENT}\n:END:\n#+title: ${title}\n#+filetags: project")
+      :unnarrowed t)))
   :bind
-    (("C-c r l" . org-roam-buffer-toggle)
-     ("C-c r f" . org-roam-node-find)
-     ("C-c r i" . org-roam-node-insert)
-     ("C-c r c" . org-roam-capture)
+  (("C-c r l" . org-roam-buffer-toggle)
+   ("C-c r f" . org-roam-node-find)
+   ("C-c r i" . org-roam-node-insert)
+   ("C-c r c" . org-roam-capture)
    ;;Dailies
-     ("C-c r j" . org-roam-dailies-capture-today)
-     :map org-mode-map ("C-M-i" . completion-at-point))
+   ("C-c r j" . org-roam-dailies-capture-today)
+   :map org-mode-map ("C-M-i" . completion-at-point))
   :config
-    (org-roam-db-autosync-mode)
-    (org-roam-setup))
+  (org-roam-db-autosync-mode)
+  (org-roam-setup))
 
 ;; =====
 ;; magit
