@@ -261,14 +261,16 @@
   :straight t
   :config (global-set-key (kbd "C-s") 'swiper))
 
-  ;; ============
-  ;; golden-ratio
-  ;; ============
-  ;; Adjusts size of active window
-(use-package golden-ratio
+  ;; ========
+  ;; olivetti
+  ;; ========
+  ;; for searching - TODO add swiper-helm?
+(use-package olivetti
   :straight t
-  :ensure t
-  :config (golden-ratio-mode 1))
+      :ensure t)
+;;(setq olivetti-mode-on-hook '())
+(add-hook 'olivetti-mode-on-hook
+  	  (lambda ()   (olivetti-set-width 200)))
 
 ;;Load the theme
 (load-theme 'modus-vivendi t)
@@ -358,19 +360,20 @@
   (when (not (file-exists-p "~/.org"))
     (make-directory "~/.org" t))
 
+
 ;;  (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
 ;;                                 (directory-files-recursively "~/.org/" "\\.org$")))
 
-  (defun t2b/org-mode-agenda-files-update ()
-    (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
-                                 (directory-files-recursively "~/.org/" "\\.org$"))))
+;;  (defun t2b/org-mode-agenda-files-update ()
+;;    (setq org-agenda-files (append (directory-files-recursively "~/org-mode_workspace/" "\\.org$")
+;;                                 (directory-files-recursively "~/.org/" "\\.org$"))))
 
   ;;(add-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
   ;;(remove-hook 'org-capture-after-finalize-hook 't2b/org-mode-agenda-files-update)
 
   (global-set-key (kbd "C-c c") 'org-capture)
   (global-set-key (kbd "C-c a") 'org-agenda)
-  
+
   (setq org-capture-templates `(("t" "Todo [monthly]" entry
                                  (file+headline ,(format-time-string "~/.org/tasks/tasks-%Y-%b.org") ,(format-time-string "%Y-%b-%d"))
                                  "* TODO %i%?")
@@ -408,19 +411,30 @@
     (when (t2b/org-filetag-exists-p s "project")
       (add-to-list 'org-agenda-files s))))
 
+(defun t2b/filter-files-by-filetag (file-list filetag)
+  "Filter FILE-LIST to include only files containing FILETAG."
+  (seq-filter (lambda (filename)
+  	      (t2b/org-filetag-exists-p filename filetag))
+              file-list))
+
+(setq org-file-regex "\\.org$")
+
 ;;(setq org-agenda-files '())
 ;;(setq org-capture-after-finalize-hook '())
 
 ;;(t2b/org-roam-agenda-update)
 ;;end personal functions
 (add-hook 'org-capture-after-finalize-hook 't2b/org-roam-agenda-update)
-
+(setq org-roam-directory "~/.roam")
+(setq org-agenda-files (t2b/filter-files-by-filetag
+    		      (directory-files-recursively org-roam-directory org-file-regex)
+  		       "project"))
 (use-package org-roam
   :straight t
   :ensure t
   :init (setq org-roam-v2-ack t)
   :custom
-  (org-roam-directory "~/.roam")
+  ;;(org-roam-directory "~/.roam")
   (org-roam-completion-everywhere t)
   (org-roam-capture-templates
    '(("d" "default" plain
@@ -624,7 +638,8 @@
     (setq lsp-java-imports-gradle-wrapper-checksums [(:sha256 "c8f4be323109753b6b2de24a5ca9c5ed711270071ac14d0718229cbc77236f48"
                                                       :allowed t)])
     :config
-    (add-hook 'java-mode-hook 'lsp))
+    (add-hook 'java-mode-hook 'lsp)
+    (add-hook 'java-mode-hook 'display-line-numbers-mode)
   ;;Revert back so no long GC pauses during runtime
 (setq gc-cons-threshold 16777216
       gc-cons-percentage 0.1)
