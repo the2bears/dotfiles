@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+﻿;; -*- lexical-binding: t; -*-
 
 ;;Bootstrap use-package
 (require 'package)
@@ -273,24 +273,33 @@
   	  (lambda ()   (olivetti-set-width 200)))
 
 ;;Load the theme
-(load-theme 'modus-vivendi t)
-(setq modus-themes-org-blocks 'gray-background)
+;;  (load-theme 'modus-vivendi t)
+;;  (load-theme 'modus-operandi t)
+;;  (setq modus-themes-org-blocks 'gray-background)
 
-;;Default is Mocha
-(use-package catppuccin-theme
-  :straight t
-  :ensure t
-  :init (load-theme 'catppuccin :no-confirm))
-;;(straight-use-package 'catppuccin-theme)
-;;(load-theme 'catppuccin :no-confirm)
-;;(setq catppuccin-flavor 'macchiato) ;; or 'latte, 'macchiato, or 'mocha
-;;(catppuccin-reload)
+  ;;Default is Mocha
+  (use-package catppuccin-theme
+    :straight t
+    :ensure t
+    :init (load-theme 'catppuccin :no-confirm))
+
+(set-background-color "#1e1e2e")
+
+  ;;(straight-use-package 'catppuccin-theme)
+  ;;(load-theme 'catppuccin :no-confirm)
+  ;;(setq catppuccin-flavor 'macchiato) ;; or 'latte, 'macchiato, or 'mocha
+  ;;(catppuccin-reload)
 
 (use-package rainbow-delimiters
   :straight t
   :ensure t
   :config
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+(use-package rainbow-identifiers
+  :straight t
+  :ensure t
+  :config
+  (add-hook 'prog-mode-hook 'rainbow-identifiers-mode))
 
 (defun t2b/org-mode-setup ()
     (org-indent-mode)
@@ -374,12 +383,19 @@
   (global-set-key (kbd "C-c c") 'org-capture)
   (global-set-key (kbd "C-c a") 'org-agenda)
 
+
+
   (setq org-capture-templates `(("t" "Todo [monthly]" entry
                                  (file+headline ,(format-time-string "~/.org/tasks/tasks-%Y-%b.org") ,(format-time-string "%Y-%b-%d"))
                                  "* TODO %i%?")
                                 ("T" "Tickler" entry
                                  (file+headline "~/.org/tickler.org" "Tickler")
                                  "* %i%? \n %U")))
+
+(use-package org-super-agenda
+  :straight t
+  :ensure t
+  :custom (org-super-agenda-mode))
 
 ;;Auto-tangle
 (use-package org-auto-tangle
@@ -465,16 +481,6 @@
   :ensure t
   :bind (("C-x g" . magit-status)))
 
-;; ===========
-;; magit-delta
-;; ===========
-;; using 'delta' for git diffs
-(use-package magit-delta
-  :straight t
-  :ensure t
-  :after magit
-  :hook (magit-mode . magit-delta-mode))
-
 ;; ===============
 ;; git-timemachine
 ;; ===============
@@ -521,19 +527,34 @@
 ;; ========
 ;;(add-hook 'java-mode-hook 'hs-minor-mode)
 (add-hook 'java-mode-hook
-(lambda()
-  (local-set-key (kbd "C-<right>") 'hs-show-block)
-  (local-set-key (kbd "C-<left>")  'hs-hide-block)
-  ;;(local-set-key (kbd "C-c <up>")    'hs-hide-all)
-  ;;(local-set-key (kbd "C-c <down>")  'hs-show-all)
-  (hs-minor-mode t)))
+          (lambda()
+            (local-set-key (kbd "C-<right>") 'hs-show-block)
+            (local-set-key (kbd "C-<left>")  'hs-hide-block)
+            ;;(local-set-key (kbd "C-c <up>")    'hs-hide-all)
+            ;;(local-set-key (kbd "C-c <down>")  'hs-show-all)
+            (hs-minor-mode t)))
 (defun display-code-line-counts (ov)
   (when (eq 'code (overlay-get ov 'hs))
     (overlay-put ov 'help-echo
-              (buffer-substring (overlay-start ov)
-  		              (overlay-end ov)))))
-
+                 (buffer-substring (overlay-start ov)
+                                   (overlay-end ov)))))
 (setq hs-set-up-overlay 'display-code-line-counts)
+
+;; ===========
+;; tree-sitter
+;; ===========
+;; emacs-lips https://github.com/Wilfred/tree-sitter-elisp
+;; java used suggested URL
+(use-package tree-sitter
+  :straight t
+  :ensure t)
+(use-package tree-sitter-langs
+  :straight t
+  :ensure t)
+(use-package treesit-auto
+   :straight t
+   :config
+   (treesit-auto-add-to-auto-mode-alist 'all))
 
 (use-package lsp-mode
   :ensure t
@@ -632,15 +653,15 @@
   (add-hook 'scala-mode-hook 'lsp))
 
 (use-package lsp-java
-    :ensure t
-    :init
-    (setq lsp-completion-provider :capf)
-    (setq lsp-java-imports-gradle-wrapper-checksums [(:sha256 "c8f4be323109753b6b2de24a5ca9c5ed711270071ac14d0718229cbc77236f48"
-                                                      :allowed t)])
-    :config
-    (add-hook 'java-mode-hook 'lsp)
-    (add-hook 'java-mode-hook 'display-line-numbers-mode)
-  ;;Revert back so no long GC pauses during runtime
+  :ensure t
+  :init
+  (setq lsp-completion-provider :capf)
+  (setq lsp-java-imports-gradle-wrapper-checksums [(:sha256 "c8f4be323109753b6b2de24a5ca9c5ed711270071ac14d0718229cbc77236f48"
+                                                            :allowed t)])
+  :config
+  (add-hook 'java-mode-hook 'lsp)
+  (add-hook 'java-mode-hook 'display-line-numbers-mode))
+;;Revert back so no long GC pauses during runtime
 (setq gc-cons-threshold 16777216
       gc-cons-percentage 0.1)
 

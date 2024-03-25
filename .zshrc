@@ -17,9 +17,9 @@ alias cleark='printf "\033[2J\033[3J\033[1;1H"'
 #     launchctl load -w ~/Library/LaunchAgents/gnu.emacs.daemon.plist
 # else
 #     echo "Not loading emacs --daemon to launchctl. Already running."
-# fi
+#  fi
 
-# Set title of terminal. For tabs. Sets to PWD but not full path.
+ # Set title of terminal. For tabs. Sets to PWD but not full path.
 function set-title-precmd() {
     printf "\e]2;%s\a" " ${PWD##*/}"
 }
