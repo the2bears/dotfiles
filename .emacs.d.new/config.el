@@ -461,71 +461,77 @@
   (setq org-auto-tangle-default t))
 
 ;;start personal functions
-(defun t2b/org-file-tags-from-file (filename)
-  "Return a list of filetags present in the Org mode file FILENAME."
-  (with-current-buffer (find-file-noselect filename)
-    (save-excursion
-      (goto-char (point-min))
-      (let ((filetags '()))
-        (while (re-search-forward "^#\\+filetags:\\s-+\\(.*\\)" nil t)
-          (message (match-string 1))
-          (setq filetags (append filetags (split-string (match-string 1) ":"))))
-        filetags))))
+  (defun t2b/org-file-tags-from-file (filename)
+    "Return a list of filetags present in the Org mode file FILENAME."
+    (with-current-buffer (find-file-noselect filename)
+      (save-excursion
+        (goto-char (point-min))
+        (let ((filetags '()))
+          (while (re-search-forward "^#\\+filetags:\\s-+\\(.*\\)" nil t)
+            (message (match-string 1))
+            (setq filetags (append filetags (split-string (match-string 1) ":"))))
+          filetags))))
 
-(defun t2b/org-filetag-exists-p (filename filetag)
-  "Return t if FILETAG exists in the Org mode file FILENAME, otherwise nil."
-  (let ((filetags (t2b/org-file-tags-from-file filename)))
-    (member filetag filetags)))
+  (defun t2b/org-filetag-exists-p (filename filetag)
+    "Return t if FILETAG exists in the Org mode file FILENAME, otherwise nil."
+    (let ((filetags (t2b/org-file-tags-from-file filename)))
+      (member filetag filetags)))
 
-(defun t2b/org-roam-agenda-update ()
-  (let ((s (buffer-file-name (org-capture-get :buffer))))
-    (when (t2b/org-filetag-exists-p s "project")
-      (add-to-list 'org-agenda-files s))))
+  (defun t2b/org-roam-agenda-update ()
+    (let ((s (buffer-file-name (org-capture-get :buffer))))
+      (when (t2b/org-filetag-exists-p s "project")
+        (add-to-list 'org-agenda-files s))))
 
-(defun t2b/filter-files-by-filetag (file-list filetag)
-  "Filter FILE-LIST to include only files containing FILETAG."
-  (seq-filter (lambda (filename)
-  	      (t2b/org-filetag-exists-p filename filetag))
-              file-list))
+  (defun t2b/filter-files-by-filetag (file-list filetag)
+    "Filter FILE-LIST to include only files containing FILETAG."
+    (seq-filter (lambda (filename)
+  		(t2b/org-filetag-exists-p filename filetag))
+                file-list))
 
-(setq org-file-regex "\\.org$")
+  (setq org-file-regex "\\.org$")
 
-;;(setq org-agenda-files '())
-;;(setq org-capture-after-finalize-hook '())
+  ;;(setq org-agenda-files '())
+  ;;(setq org-capture-after-finalize-hook '())
 
-;;(t2b/org-roam-agenda-update)
-;;end personal functions
-(add-hook 'org-capture-after-finalize-hook 't2b/org-roam-agenda-update)
-(setq org-roam-directory "~/.roam")
-(setq org-agenda-files (t2b/filter-files-by-filetag
-    		      (directory-files-recursively org-roam-directory org-file-regex)
-  		       "project"))
-(use-package org-roam
+  ;;(t2b/org-roam-agenda-update)
+  ;;end personal functions
+  (add-hook 'org-capture-after-finalize-hook 't2b/org-roam-agenda-update)
+  (setq org-roam-directory "~/.roam")
+  (setq org-agenda-files (t2b/filter-files-by-filetag
+    			(directory-files-recursively org-roam-directory org-file-regex)
+  			 "project"))
+  (use-package org-roam
+;;    :straight t
+    :ensure t
+    :init (setq org-roam-v2-ack t)
+    :custom
+    ;;(org-roam-directory "~/.roam")
+    (org-roam-completion-everywhere t)
+    (org-roam-capture-templates
+     '(("d" "default" plain
+        "%?"
+        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+        :unnarrowed t)
+       ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Initial tasks for ${title}\n\n* Dates\n\n"
+        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" ":PROPERTIES:\n:CATEGORY: %^{CATEGORY}\n:PARENT: %^{PARENT}\n:END:\n#+title: ${title}\n#+filetags: project")
+        :unnarrowed t)))
+    :bind
+    (("C-c r l" . org-roam-buffer-toggle)
+     ("C-c r f" . org-roam-node-find)
+     ("C-c r i" . org-roam-node-insert)
+     ("C-c r c" . org-roam-capture)
+     ;;Dailies
+     ("C-c r j" . org-roam-dailies-capture-today)
+     :map org-mode-map ("C-M-i" . completion-at-point))
+    :config
+    (org-roam-db-autosync-mode)
+    (org-roam-setup))
+
+(use-package verb
   :straight t
   :ensure t
-  :init (setq org-roam-v2-ack t)
-  :custom
-  ;;(org-roam-directory "~/.roam")
-  (org-roam-completion-everywhere t)
-  (org-roam-capture-templates
-   '(("d" "default" plain
-      "%?"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-      :unnarrowed t)
-     ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Initial tasks for ${title}\n\n* Dates\n\n"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" ":PROPERTIES:\n:CATEGORY: %^{CATEGORY}\n:PARENT: %^{PARENT}\n:END:\n#+title: ${title}\n#+filetags: project")
-      :unnarrowed t)))
-  :bind
-  (("C-c r l" . org-roam-buffer-toggle)
-   ("C-c r f" . org-roam-node-find)
-   ("C-c r i" . org-roam-node-insert)
-   ("C-c r c" . org-roam-capture)
-   ;;Dailies
-   ("C-c r j" . org-roam-dailies-capture-today)
-   :map org-mode-map ("C-M-i" . completion-at-point))
-  :config
-  (org-roam-db-autosync-mode)
-  (org-roam-setup))
+  :after org
+  :config (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 
 ;; =====
 ;; magit
@@ -615,60 +621,43 @@
 ;;    (treesit-auto-add-to-auto-mode-alist 'all))
 
 (use-package lsp-mode
-  :ensure t
-  ;; Optional - enable lsp-mode automatically in scala files
-  :hook ;;(scala-mode . lsp-deferred)
-        (lsp-mode . lsp-lens-mode)
-        (lsp-mode . lsp-enable-which-key-integration)
-  :config
-  ;; Uncomment following section if you would like to tune lsp-mode performance according to
-  ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
-  ;;       (setq gc-cons-threshold 100000000) ;; 100mb
-  ;;       (setq read-process-output-max (* 1024 1024)) ;; 1mb
-  ;;       (setq lsp-idle-delay 0.500)
-  ;;       (setq lsp-log-io nil)
-  (setq lsp-prefer-flymake nil
-        lsp-client-packages '(lsp-clients lsp-metals)))
+    ;;:straight t
+    :ensure t
+    ;; Optional - enable lsp-mode automatically in scala files
+    :hook ;;(scala-mode . lsp-deferred)
+          (lsp-mode . lsp-lens-mode)
+          (lsp-mode . lsp-enable-which-key-integration)
+          ;;(haskell-mode . lsp-deferred)
+    :config
+    ;; Uncomment following section if you would like to tune lsp-mode performance according to
+    ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
+    ;;       (setq gc-cons-threshold 100000000) ;; 100mb
+    ;;       (setq read-process-output-max (* 1024 1024)) ;; 1mb
+    ;;       (setq lsp-idle-delay 0.500)
+    ;;       (setq lsp-log-io nil)
+    (setq lsp-prefer-flymake nil)
+          ;;lsp-client-packages '(lsp-clients lsp-metals)
+    (setq lsp-haskell-plugin-cabal-code-actions-on t)
+    (setq lsp-haskell-process-path-hie "haskell-language-server-wrapper")
+    (setq lsp-haskell-process-args-hie '("-d" "-l" "/tmp/hls.log")))
 
-  ;;(use-package company-lsp
-  ;;  :ensure t)
+    ;;(use-package company-lsp
+    ;;  :ensure t)
 
-  ;; Enable nice rendering of documentation on hover
-  ;;   Warning: on some systems this package can reduce your emacs responsiveness significally.
-  ;;   (See: https://emacs-lsp.github.io/lsp-mode/page/performance/)
-  ;;   In that case you have to not only disable this but also remove from the packages since
-  ;;   lsp-mode can activate it automatically.
-(use-package lsp-ui
-  :straight t
-  :ensure t)
-(use-package dap-mode
-  :after lsp-mode
-  :config (dap-auto-configure-mode))
-(use-package dap-java
-  :straight f
-  :ensure nil)
-
-;; for Prolog
-(lsp-register-client
- ;;(message "t2b/prolog-lsp-fn()")
-  (make-lsp-client
-   :new-connection
-   (lsp-stdio-connection (list "swipl"
-                            "-g" "use_module(library(lsp_server))."
-                            "-g" "lsp_server:main"
-                            "-t" "halt"
-                            "--" "stdio")) 
-   :major-modes '(prolog-mode)
-   :priority 1
-   :multi-root t
-   :server-id 'prolog-ls))
-
-
-(use-package prolog
-  :ensure t
-  :config (add-hook 'prolog-mode-hook 'lsp))
-(setq auto-mode-alist (append '(("\\.pl$" . prolog-mode))
-                             auto-mode-alist))
+    ;; Enable nice rendering of documentation on hover
+    ;;   Warning: on some systems this package can reduce your emacs responsiveness significally.
+    ;;   (See: https://emacs-lsp.github.io/lsp-mode/page/performance/)
+    ;;   In that case you have to not only disable this but also remove from the packages since
+    ;;   lsp-mode can activate it automatically.
+  (use-package lsp-ui
+    :straight t
+    :ensure t)
+;;  (use-package dap-mode
+;;    :after lsp-mode
+;;    :config (dap-auto-configure-mode))
+;;  (use-package dap-java
+;;    :straight t
+;;    :ensure nil)
 
 ;;clojure-mode
 (use-package clojure-mode
@@ -681,34 +670,45 @@
   ;;(add-hook 'cider-mode-hook #'company-mode)
   ;;(add-hook 'clojure-mode-hook #'company-mode))
 
-;; Enable scala-mode for highlighting, indentation and motion commands
-(use-package scala-mode
-  :straight t
-  :ensure t
-  :interpreter
-  ("scala" . scala-mode))
+(use-package haskell-mode
+  :straight t)
+;;(use-package lsp-haskell
+;;	 :straight t
+;; Comment/uncomment this line to see interactions between lsp client/server.
+;;(setq lsp-log-io t)
+;;  )
 
-  ;; Enable sbt mode for executing sbt commands
-(use-package sbt-mode
-  :straight t
-  :ensure t
-  :commands sbt-start sbt-command
-  :config
-  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
-  ;; allows using SPACE when in the minibuffer
-  (substitute-key-definition
-   'minibuffer-complete-word
-   'self-insert-command
-   minibuffer-local-completion-map)
-  ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
-  (setq sbt:program-options '("-Dsbt.supershell=false")))
+;; FIXES below found: https://tony-zorman.com/posts/fixing-lsp-mode.html
+(use-package lsp-haskell
+  :after lsp-mode
+  :preface
+  (defun slot/lsp-haskell-type-signature ()
+    "Add a type signature for the thing at point.
+This is very convenient, for example, when dealing with local
+functions, since those—as opposed to top-level expressions—don't
+have a code lens for \"add type signature here\" associated with
+them."
+    (interactive)
+    (let* ((value (slot/lsp-get-type-signature-at-point "haskell")))
+      (slot/back-to-indentation)
+      (insert value)
+      (haskell-indentation-newline-and-indent)))
 
-  ;; Add metals backend for lsp-mode
-(use-package lsp-metals
-  :straight t
-  :ensure t
+  ;; Fixes https://github.com/emacs-lsp/lsp-haskell/issues/151
+  (cl-defmethod lsp-clients-extract-signature-on-hover (contents (_server-id (eql lsp-haskell)))
+    "Display the type signature of the function under point."
+    (slot/syntax-highlight-string
+     (slot/lsp-get-type-signature "haskell" (plist-get contents :value))
+     'haskell-mode))
+
+  :bind (:map lsp-mode-map
+              ("C-c C-t" . slot/lsp-haskell-type-signature))
   :config
-  (add-hook 'scala-mode-hook 'lsp))
+  (setq lsp-haskell-server-path "haskell-language-server-wrapper")
+  :custom
+  (lsp-haskell-plugin-stan-global-on nil)
+  (lsp-haskell-plugin-import-lens-code-lens-on nil)
+  (lsp-haskell-plugin-import-lens-code-actions-on nil))
 
 (use-package lsp-java
   :ensure t
@@ -736,6 +736,35 @@
               ("C-c C-c s" . lsp-rust-analyzer-status))
   :config
   (setq rustic-format-on-save t))
+
+;; Enable scala-mode for highlighting, indentation and motion commands
+(use-package scala-mode
+  :straight t
+  :ensure t
+  :interpreter
+  ("scala" . scala-mode))
+
+  ;; Enable sbt mode for executing sbt commands
+(use-package sbt-mode
+  :straight t
+  :ensure t
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+  ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+  (setq sbt:program-options '("-Dsbt.supershell=false")))
+
+  ;; Add metals backend for lsp-mode
+;; (use-package lsp-metals
+;;   :straight t
+;;   :ensure t
+;;   :config
+;;   (add-hook 'scala-mode-hook 'lsp))
 
 (use-package dyalog-mode
   :straight t

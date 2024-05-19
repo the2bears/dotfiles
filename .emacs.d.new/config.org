@@ -568,7 +568,7 @@
     			(directory-files-recursively org-roam-directory org-file-regex)
   			 "project"))
   (use-package org-roam
-    :straight t
+;;    :straight t
     :ensure t
     :init (setq org-roam-v2-ack t)
     :custom
@@ -595,6 +595,20 @@
     (org-roam-setup))
 
   #+end_src
+
+*** Verb
+
+Verb is a package for Emacs which allows you to organize and send HTTP requests.
+
+#+begin_src emacs-lisp
+
+    (use-package verb
+      :straight t
+      :ensure t
+      :after org
+      :config (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
+
+#+end_src
 ** Development
 *** General
 **** GIT
@@ -693,61 +707,45 @@
 
 *** LSP and DAP
 #+begin_src emacs-lisp 
-  (use-package lsp-mode
-    :ensure t
-    ;; Optional - enable lsp-mode automatically in scala files
-    :hook ;;(scala-mode . lsp-deferred)
-          (lsp-mode . lsp-lens-mode)
-          (lsp-mode . lsp-enable-which-key-integration)
-    :config
-    ;; Uncomment following section if you would like to tune lsp-mode performance according to
-    ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
-    ;;       (setq gc-cons-threshold 100000000) ;; 100mb
-    ;;       (setq read-process-output-max (* 1024 1024)) ;; 1mb
-    ;;       (setq lsp-idle-delay 0.500)
-    ;;       (setq lsp-log-io nil)
-    (setq lsp-prefer-flymake nil
-          lsp-client-packages '(lsp-clients lsp-metals)))
+    (use-package lsp-mode
+      ;;:straight t
+      :ensure t
+      ;; Optional - enable lsp-mode automatically in scala files
+      :hook ;;(scala-mode . lsp-deferred)
+            (lsp-mode . lsp-lens-mode)
+            (lsp-mode . lsp-enable-which-key-integration)
+            ;;(haskell-mode . lsp-deferred)
+      :config
+      ;; Uncomment following section if you would like to tune lsp-mode performance according to
+      ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
+      ;;       (setq gc-cons-threshold 100000000) ;; 100mb
+      ;;       (setq read-process-output-max (* 1024 1024)) ;; 1mb
+      ;;       (setq lsp-idle-delay 0.500)
+      ;;       (setq lsp-log-io nil)
+      (setq lsp-prefer-flymake nil)
+            ;;lsp-client-packages '(lsp-clients lsp-metals)
+      (setq lsp-haskell-plugin-cabal-code-actions-on t)
+      (setq lsp-haskell-process-path-hie "haskell-language-server-wrapper")
+      (setq lsp-haskell-process-args-hie '("-d" "-l" "/tmp/hls.log")))
+  
+      ;;(use-package company-lsp
+      ;;  :ensure t)
 
-    ;;(use-package company-lsp
-    ;;  :ensure t)
+      ;; Enable nice rendering of documentation on hover
+      ;;   Warning: on some systems this package can reduce your emacs responsiveness significally.
+      ;;   (See: https://emacs-lsp.github.io/lsp-mode/page/performance/)
+      ;;   In that case you have to not only disable this but also remove from the packages since
+      ;;   lsp-mode can activate it automatically.
+    (use-package lsp-ui
+      :straight t
+      :ensure t)
+  ;;  (use-package dap-mode
+  ;;    :after lsp-mode
+  ;;    :config (dap-auto-configure-mode))
+  ;;  (use-package dap-java
+  ;;    :straight t
+  ;;    :ensure nil)
 
-    ;; Enable nice rendering of documentation on hover
-    ;;   Warning: on some systems this package can reduce your emacs responsiveness significally.
-    ;;   (See: https://emacs-lsp.github.io/lsp-mode/page/performance/)
-    ;;   In that case you have to not only disable this but also remove from the packages since
-    ;;   lsp-mode can activate it automatically.
-  (use-package lsp-ui
-    :straight t
-    :ensure t)
-  (use-package dap-mode
-    :after lsp-mode
-    :config (dap-auto-configure-mode))
-  (use-package dap-java
-    :straight f
-    :ensure nil)
-
-  ;; for Prolog
-  (lsp-register-client
-   ;;(message "t2b/prolog-lsp-fn()")
-    (make-lsp-client
-     :new-connection
-     (lsp-stdio-connection (list "swipl"
-                              "-g" "use_module(library(lsp_server))."
-                              "-g" "lsp_server:main"
-                              "-t" "halt"
-                              "--" "stdio")) 
-     :major-modes '(prolog-mode)
-     :priority 1
-     :multi-root t
-     :server-id 'prolog-ls))
-
-
-  (use-package prolog
-    :ensure t
-    :config (add-hook 'prolog-mode-hook 'lsp))
-  (setq auto-mode-alist (append '(("\\.pl$" . prolog-mode))
-                               auto-mode-alist))
 
 
 #+end_src
@@ -764,36 +762,52 @@
   ;;(add-hook 'cider-mode-hook #'company-mode)
   ;;(add-hook 'clojure-mode-hook #'company-mode))
 #+end_src
-*** Scala
+
+*** Haskell
 #+begin_src emacs-lisp
-  ;; Enable scala-mode for highlighting, indentation and motion commands
-(use-package scala-mode
-  :straight t
-  :ensure t
-  :interpreter
-  ("scala" . scala-mode))
 
-  ;; Enable sbt mode for executing sbt commands
-(use-package sbt-mode
-  :straight t
-  :ensure t
-  :commands sbt-start sbt-command
-  :config
-  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
-  ;; allows using SPACE when in the minibuffer
-  (substitute-key-definition
-   'minibuffer-complete-word
-   'self-insert-command
-   minibuffer-local-completion-map)
-  ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
-  (setq sbt:program-options '("-Dsbt.supershell=false")))
+  (use-package haskell-mode
+    :straight t)
+  ;;(use-package lsp-haskell
+  ;;	 :straight t
+  ;; Comment/uncomment this line to see interactions between lsp client/server.
+  ;;(setq lsp-log-io t)
+  ;;  )
 
-  ;; Add metals backend for lsp-mode
-(use-package lsp-metals
-  :straight t
-  :ensure t
-  :config
-  (add-hook 'scala-mode-hook 'lsp))
+  ;; FIXES below found: https://tony-zorman.com/posts/fixing-lsp-mode.html
+  (use-package lsp-haskell
+    :after lsp-mode
+    :preface
+    (defun slot/lsp-haskell-type-signature ()
+      "Add a type signature for the thing at point.
+  This is very convenient, for example, when dealing with local
+  functions, since those—as opposed to top-level expressions—don't
+  have a code lens for \"add type signature here\" associated with
+  them."
+      (interactive)
+      (let* ((value (slot/lsp-get-type-signature-at-point "haskell")))
+        (slot/back-to-indentation)
+        (insert value)
+        (haskell-indentation-newline-and-indent)))
+
+    ;; Fixes https://github.com/emacs-lsp/lsp-haskell/issues/151
+    (cl-defmethod lsp-clients-extract-signature-on-hover (contents (_server-id (eql lsp-haskell)))
+      "Display the type signature of the function under point."
+      (slot/syntax-highlight-string
+       (slot/lsp-get-type-signature "haskell" (plist-get contents :value))
+       'haskell-mode))
+
+    :bind (:map lsp-mode-map
+                ("C-c C-t" . slot/lsp-haskell-type-signature))
+    :config
+    (setq lsp-haskell-server-path "haskell-language-server-wrapper")
+    :custom
+    (lsp-haskell-plugin-stan-global-on nil)
+    (lsp-haskell-plugin-import-lens-code-lens-on nil)
+    (lsp-haskell-plugin-import-lens-code-actions-on nil))
+
+
+
 #+end_src
 *** Java
 #+begin_src  emacs-lisp
@@ -826,6 +840,38 @@
     :config
     (setq rustic-format-on-save t))
 #+end_src
+*** Scala
+#+begin_src emacs-lisp
+  ;; Enable scala-mode for highlighting, indentation and motion commands
+(use-package scala-mode
+  :straight t
+  :ensure t
+  :interpreter
+  ("scala" . scala-mode))
+
+  ;; Enable sbt mode for executing sbt commands
+(use-package sbt-mode
+  :straight t
+  :ensure t
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+  ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+  (setq sbt:program-options '("-Dsbt.supershell=false")))
+
+  ;; Add metals backend for lsp-mode
+;; (use-package lsp-metals
+;;   :straight t
+;;   :ensure t
+;;   :config
+;;   (add-hook 'scala-mode-hook 'lsp))
+
+  #+end_src
 *** AL
 #+begin_src emacs-lisp
   (use-package dyalog-mode
